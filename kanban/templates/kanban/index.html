@@ -1,0 +1,112 @@
+<!-- kanban/templates/kanban/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Board</title>
+    <style>
+        /* CSS スタイルをここに定義 */
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .kanban-container {
+            display: flex;
+            justify-content: space-around;
+        }
+        .column {
+            width: 30%;
+            min-width: 200px;
+            margin: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .ticket {
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="kanban-container">
+    <div class="column" id="todo" ondrop="drop(event, 'To Do')" ondragover="allowDrop(event)">
+        <h2>To Do</h2>
+        {% for task in tasks %}
+            {% if task.status == 'To Do' %}
+                <div class="ticket" id="{{ task.id }}" draggable="true" ondragstart="drag(event)">{{ task.title }}</div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <div class="column" id="in-progress" ondrop="drop(event, 'In Progress')" ondragover="allowDrop(event)">
+        <h2>In Progress</h2>
+        {% for task in tasks %}
+            {% if task.status == 'In Progress' %}
+                <div class="ticket" id="{{ task.id }}" draggable="true" ondragstart="drag(event)">{{ task.title }}</div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <div class="column" id="done" ondrop="drop(event, 'Done')" ondragover="allowDrop(event)">
+        <h2>Done</h2>
+        {% for task in tasks %}
+            {% if task.status == 'Done' %}
+                <div class="ticket" id="{{ task.id }}" draggable="true" ondragstart="drag(event)">{{ task.title }}</div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<form action="{% url 'add_task' %}" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Add Task</button>
+</form>
+
+<script>
+    // JavaScript 部分
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+    
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+    
+    function drop(ev, status) {
+        ev.preventDefault();
+        var taskId = ev.dataTransfer.getData("text");
+        var taskStatus = document.getElementById(taskId).parentElement.id;
+        if (taskStatus !== status) {
+            ev.target.appendChild(document.getElementById(taskId));
+            updateTaskStatus(taskId, status);
+        }
+    }
+
+    // JavaScript
+    // JavaScript
+    function updateTaskStatus(taskId, status) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("PUT", "/update_task/" + taskId + "/");  // taskIdをURLに含める
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                console.log("Task status updated successfully.");
+            }
+        };
+        xhr.send(JSON.stringify(status));
+    }
+
+
+
+
+</script>
+
+</body>
+</html>
