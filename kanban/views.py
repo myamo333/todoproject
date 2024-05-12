@@ -26,8 +26,8 @@ def add_task(request):
 
 @csrf_exempt
 def update_task(request, task_id):
+    task = Task.objects.get(pk=task_id)
     if request.method == 'PUT':
-        task = Task.objects.get(pk=task_id)
         new_status = request.body.decode('utf-8')
         task.status = new_status
         task.save()
